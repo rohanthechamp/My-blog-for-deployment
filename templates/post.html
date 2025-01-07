@@ -1,0 +1,100 @@
+{% include "header.html" %} {% from "bootstrap5/form.html" import render_form %}
+
+<!-- Page Header -->
+<header class="masthead" style="background-image: url('{{ post.img_url }}')">
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="post-heading">
+          <h1>{{ post.title }}</h1>
+          <h2 class="subheading">{{ post.subtitle }}</h2>
+          <span class="meta">
+            Posted by <a href="#">{{ post.author.name }}</a> on {{ post.date }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Post Content -->
+<article>
+  <div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        {{ post.body|safe }}
+
+        <!-- Only show Edit Post button if user is admin (ID: 1) -->
+        {% if current_user.id == 1 %}
+        <div class="d-flex justify-content-end mb-4">
+          <a
+            class="btn btn-primary float-right"
+            href="{{ url_for('edit_post', post_id=post.id) }}"
+          >
+            Edit Post
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Comment Section -->
+        {% if current_user.is_authenticated %} {{ ckeditor.load() }} {{
+        ckeditor.config(name='CommentField') }}
+
+        <!-- Render the comment form -->
+        {{ render_form(form, novalidate=True, button_map={"submit": "primary"})
+        }}
+
+        <div class="comment mt-5">
+          <!-- Show all comments on the post -->
+          <ul class="commentList">
+            {% for comment in post.comments %}
+            <li>
+              <div class="commenterImage">
+                <img src="{{ comment.comment_author.email | gravatar }}" />
+              </div>
+              <div class="commentText">
+                <p>
+                  {{ comment.text|safe }} {% if current_user.id == 1 %} <div><a href="{{ url_for('delete_comment',comment_id=comment.id) }}">❌</a> </div>
+                  {% endif %}
+                  <span class="date sub-text"
+                    >By {{ comment.comment_author.name }}</span
+                  >
+                </p>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% else %}
+        <div
+          class="alert alert-info"
+          role="alert"
+          style="max-width: 400px; margin: auto"
+        >
+          <h4 class="alert-heading">Join the Conversation!</h4>
+          <p>Register or log in to comment on posts and view other comments.</p>
+          <hr />
+          <div class="d-flex justify-content-between">
+            <a
+              href="{{ url_for('login') }}"
+              class="btn btn-primary"
+              style="background-color: rgb(127, 212, 255)"
+            >
+              Log In
+            </a>
+            <a
+              href="{{ url_for('register') }}"
+              class="btn btn-primary"
+              style="background-color: rgb(43, 198, 226)"
+            >
+              Register
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</article>
+
+{% include "footer.html" %}
